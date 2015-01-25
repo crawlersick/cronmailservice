@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/sendmail-from-vg-udp</url>
+    <description>sendmail-from-vg-udp</description>
+    <schedule>every 15 minutes</schedule> 
+  </cron>
+
+</cronentries>
