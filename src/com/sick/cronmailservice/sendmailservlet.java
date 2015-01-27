@@ -3,11 +3,14 @@ package com.sick.cronmailservice;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -22,10 +25,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import Datatool.CheckEmpty;
+import Datatool.PMF;
+
 import com.google.appengine.api.mail.MailService.Attachment;
 import com.google.appengine.api.mail.MailService;
 import com.google.appengine.api.mail.MailServiceFactory;
 
+import dataobjects.EmailAddress;
 import netfetch.ChapterItem;
 import netfetch.FetchAnyWeb;
 import netfetch.FetchWEB;
@@ -71,31 +78,38 @@ public class sendmailservlet extends HttpServlet {
                  
                 byte attachmentbinary[] = compress(sd.toString());
                  
-                /*
-                String htmlBody="This is a Mail with Attachment for further Program Processing!";
-                Multipart mp = new MimeMultipart();
-                MimeBodyPart htmlPart = new MimeBodyPart();
-                htmlPart.setContent(htmlBody, "text/html");
-                mp.addBodyPart(htmlPart);
+                PersistenceManager pm = PMF.get().getPersistenceManager();
+        		String temp;
+        		if(CheckEmpty.docheck("dataobjects.EmailAddress"))
+        		{
+        			
+        			temp="temp1q2w3e@hotmail.com";
+        			EmailAddress ea=new EmailAddress("temp1q2w3e@hotmail.com");
+        			pm.makePersistent(ea);
+        			pm.close();
+        		}else
+        		{
+        			temp="";
+        			Query q = pm.newQuery(EmailAddress.class);
+        			try {
+        				  
+        				  List<EmailAddress> results = (List<EmailAddress>) q.execute();
+        				  if (!results.isEmpty()) {
+        				    for (EmailAddress p : results) {
+        				    	temp=temp+p.getMail()+",";
+        				      // Process result p
+        				    }
+        				    temp=temp.substring(0,temp.length()-1);
+        				  } else {
+        				    // Handle "no results" case
+        				  }
+        				} finally {
+        				  q.closeAll();
+        				}
+        		}
                 
-                MimeBodyPart attachment = new MimeBodyPart();
-                attachment.setFileName("pujiela.gzip");
-                attachment.setContent(attachmentbinary, "application/x-gzip");
-                mp.addBodyPart(attachment);
-              
-
-
-	            Message msg = new MimeMessage(session);
-	            msg.setFrom(new InternetAddress("admin@cronmailservice.appspotmail.com", "cronmailservice.com Admin"));
-	            msg.addRecipient(Message.RecipientType.TO,
-	                             new InternetAddress("temp1q2w3e@hotmail.com", "Mr. User"));
-	            msg.setSubject("Testing from appspot");
-	           // msg.setText(msgBody);
-	            
-	            msg.setContent(mp);
-	            Transport.send(msg);
-	            */
-                sendEmail("temp1q2w3e@hotmail.com","ThanksToTsukuba_World-on-my-shoulders-as-I-run-back-to-this-8-Mile-Road_cronmailservice","dataforvgendwithudp.gzip",attachmentbinary);
+                
+                sendEmail(temp,"ThanksToTsukuba_World-on-my-shoulders-as-I-run-back-to-this-8-Mile-Road_cronmailservice","dataforvgendwithudp.gzip",attachmentbinary);
                 
 	        } catch (Exception e) {
 	        	log.log(Level.SEVERE,"error"+e.toString());
